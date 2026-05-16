@@ -160,22 +160,36 @@ export async function generateArticle(keyword: string, category: string): Promis
 - 自然な日本語、読みやすい文体
 - タグは5個、カテゴリ関連のキーワードを選ぶ`
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: prompt,
-  })
+  let parsed: { title?: unknown; meta_desc?: unknown; content?: unknown; tags?: unknown } | null = null
+  let lastError = ''
 
-  const rawText = response.text ?? ''
-  const raw = rawText.replace(/```json\n?|\n?```/g, '').trim()
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { maxOutputTokens: 8192 },
+      })
 
-  let parsed: { title?: unknown; meta_desc?: unknown; content?: unknown; tags?: unknown }
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    throw new Error(`Gemini returned invalid JSON: ${raw.slice(0, 200)}`)
+      const rawText = response.text ?? ''
+      const raw = rawText.replace(/```json\n?|\n?```/g, '').trim()
+
+      // JSON部分だけ抽出（前後に余計な文字がある場合に対応）
+      const jsonMatch = raw.match(/\{[\s\S]*\}/)
+      const jsonStr = jsonMatch ? jsonMatch[0] : raw
+
+      parsed = JSON.parse(jsonStr)
+      if (parsed && parsed.title && parsed.content && parsed.meta_desc) break
+
+      lastError = 'missing required fields'
+    } catch (e) {
+      lastError = e instanceof Error ? e.message.slice(0, 100) : String(e)
+      if (attempt < 3) await new Promise(r => setTimeout(r, 3000 * attempt))
+    }
   }
-  if (!parsed.title || !parsed.content || !parsed.meta_desc) {
-    throw new Error('Gemini response missing required fields')
+
+  if (!parsed || !parsed.title || !parsed.content || !parsed.meta_desc) {
+    throw new Error(`Gemini failed after 3 attempts: ${lastError}`)
   }
 
   return {
