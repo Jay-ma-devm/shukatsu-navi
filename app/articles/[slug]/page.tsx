@@ -1,6 +1,7 @@
 // app/articles/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
 import { getArticleBySlug, getAllSlugs } from '@/lib/supabase'
 import { AffiliateBlock } from '@/components/AffiliateBlock'
 import type { Metadata } from 'next'
@@ -58,7 +59,7 @@ export default async function ArticlePage({
 
       <div
         className="prose prose-lg max-w-none mt-6"
-        dangerouslySetInnerHTML={{ __html: marked.parse(article.content) as string }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(article.content) as string) }}
       />
 
       <AffiliateBlock />

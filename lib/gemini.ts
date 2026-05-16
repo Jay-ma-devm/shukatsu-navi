@@ -40,14 +40,23 @@ export async function generateArticle(keyword: string, category: string): Promis
     contents: prompt,
   })
 
-  const responseText = response.text ?? ''
-  const raw = responseText.replace(/```json\n?|\n?```/g, '').trim()
-  const parsed = JSON.parse(raw)
+  const rawText = response.text ?? ''
+  const raw = rawText.replace(/```json\n?|\n?```/g, '').trim()
+
+  let parsed: { title?: unknown; meta_desc?: unknown; content?: unknown }
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new Error(`Gemini returned invalid JSON: ${raw.slice(0, 200)}`)
+  }
+  if (!parsed.title || !parsed.content || !parsed.meta_desc) {
+    throw new Error('Gemini response missing required fields')
+  }
 
   return {
-    title: parsed.title,
-    content: parsed.content,
-    meta_desc: parsed.meta_desc,
+    title: parsed.title as string,
+    content: parsed.content as string,
+    meta_desc: parsed.meta_desc as string,
     slug: toSlug(keyword),
     keyword,
     category,

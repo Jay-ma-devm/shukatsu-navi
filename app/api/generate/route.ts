@@ -6,7 +6,8 @@ import { getUnusedKeyword, saveArticle, markKeywordUsed } from '@/lib/supabase'
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   const token = authHeader?.replace('Bearer ', '')
-  if (token !== process.env.CRON_SECRET) {
+  const secret = process.env.CRON_SECRET
+  if (!secret || token !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

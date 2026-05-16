@@ -37,10 +37,11 @@ export const supabase = isConfigured(supabaseUrl)
   : (null as unknown as ReturnType<typeof createClient>)
 
 export function supabaseAdmin() {
-  if (!isConfigured(supabaseUrl)) {
-    throw new Error('Supabase is not configured')
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!isConfigured(supabaseUrl) || !serviceKey) {
+    throw new Error('Supabase admin is not configured')
   }
-  return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY ?? '')
+  return createClient(supabaseUrl, serviceKey)
 }
 
 export async function getArticles(limit = 10): Promise<Article[]> {
