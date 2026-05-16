@@ -36,7 +36,7 @@ export async function generateArticle(keyword: string, category: string): Promis
 - 冒頭100字で読者の悩みに共感する`
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-2.5-flash',
     contents: prompt,
   })
 
