@@ -5,7 +5,7 @@ import { MyLikesList } from '@/components/MyLikesList'
 
 export const metadata: Metadata = {
   title: 'いいねした記事',
-  description: 'あなたがいいねした就活コンパスの記事一覧です',
+  description: 'あなたがいいねした就活ナビの記事一覧です',
 }
 
 // クライアントから fetch するため動的レンダリング

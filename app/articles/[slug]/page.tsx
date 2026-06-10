@@ -96,7 +96,7 @@ function renderMarkdownSafe(content: string): string {
   return DOMPurify.sanitize(raw)
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass-jp.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsunavi.vercel.app'
 
 /** JSON-LD を XSS-safe にシリアライズする（< を unicode エスケープ） */
 function safeJsonLd(obj: unknown): string {
@@ -137,11 +137,11 @@ export default async function ArticlePage({
     description: article.meta_desc,
     author: {
       '@type': 'Organization',
-      name: '就活コンパス',
+      name: '就活ナビ',
     },
     publisher: {
       '@type': 'Organization',
-      name: '就活コンパス',
+      name: '就活ナビ',
       url: BASE_URL,
     },
     datePublished: article.created_at,
@@ -162,7 +162,7 @@ export default async function ArticlePage({
       {
         '@type': 'ListItem',
         position: 1,
-        name: '就活コンパス',
+        name: '就活ナビ',
         item: BASE_URL,
       },
       {
@@ -240,7 +240,7 @@ export default async function ArticlePage({
         <div className="max-w-3xl mx-auto px-6 py-10">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs mb-5" aria-label="パンくず" style={{ color: '#9CA3AF' }}>
-            <Link href="/" className="hover:text-white transition-colors">就活コンパス</Link>
+            <Link href="/" className="hover:text-white transition-colors">就活ナビ</Link>
             <span>/</span>
             <Link
               href={`/category/${encodeURIComponent(article.category)}`}

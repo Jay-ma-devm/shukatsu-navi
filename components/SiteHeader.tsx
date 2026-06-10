@@ -22,7 +22,7 @@ export function SiteHeader() {
             className="text-white text-xl font-black tracking-tight group-hover:opacity-80 transition-opacity"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
-            就活コンパス
+            就活ナビ
           </p>
           <p className="text-xs tracking-widest uppercase mt-0.5" style={{ color: 'var(--accent)', opacity: 0.8 }}>
             Job Hunting Guide

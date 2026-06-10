@@ -29,7 +29,7 @@ export function SiteFooter() {
                 className="text-white text-2xl font-black hover:opacity-80 transition-opacity"
                 style={{ fontFamily: 'var(--font-serif)' }}
               >
-                就活コンパス
+                就活ナビ
               </p>
               <p className="text-xs tracking-widest uppercase mt-1" style={{ color: 'var(--accent)', opacity: 0.8 }}>
                 Job Hunting Guide
@@ -117,7 +117,7 @@ export function SiteFooter() {
       >
         <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs" style={{ color: '#6B7280' }}>
-            © 2026 就活コンパス. All rights reserved.
+            © 2026 就活ナビ. All rights reserved.
           </p>
           <p className="text-xs" style={{ color: '#4B5563' }}>
             当サイトはアフィリエイト広告を利用しています
