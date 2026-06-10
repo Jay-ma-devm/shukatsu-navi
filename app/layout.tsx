@@ -18,7 +18,7 @@ const notoSansJP = Noto_Sans_JP({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass-jp.vercel.app'),
   title: {
     default: '就活コンパス｜28卒就活完全攻略ガイド',
     template: '%s｜就活コンパス',
@@ -28,11 +28,11 @@ export const metadata: Metadata = {
     siteName: '就活コンパス',
     locale: 'ja_JP',
     type: 'website',
-    images: [{ url: 'https://shukatsu-compass.vercel.app/og-default.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://shukatsu-compass-jp.vercel.app/og-default.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    images: ['https://shukatsu-compass.vercel.app/og-default.png'],
+    images: ['https://shukatsu-compass-jp.vercel.app/og-default.png'],
   },
 };
 

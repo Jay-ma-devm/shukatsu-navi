@@ -96,7 +96,7 @@ function renderMarkdownSafe(content: string): string {
   return DOMPurify.sanitize(raw)
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass-jp.vercel.app'
 
 /** JSON-LD を XSS-safe にシリアライズする（< を unicode エスケープ） */
 function safeJsonLd(obj: unknown): string {

@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 export const revalidate = 1800
 
 const PER_PAGE = 15
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsu-compass-jp.vercel.app'
 
 /** JSON-LD を XSS-safe にシリアライズする（< を unicode エスケープ） */
 function safeJsonLd(obj: unknown): string {
