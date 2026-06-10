@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { marked } from 'marked'
+import sanitizeHtml from 'sanitize-html'
 import { getArticleBySlug, getAllSlugs, getRelatedArticles, getPopularInCategory, getTotalCount } from '@/lib/supabase'
 import { AffiliateBlock } from '@/components/AffiliateBlock'
 import { LikeButton } from '@/components/LikeButton'
@@ -70,17 +71,38 @@ function extractToc(markdown: string): { id: string; text: string }[] {
 }
 
 /**
- * 記事本文（第一者コンテンツ）を marked で HTML 化する。
- * 本文は自前の DB に service role でのみ書き込まれる信頼済みデータのため、
- * jsdom 依存の DOMPurify は使わず（Vercel ランタイムで ERR_REQUIRE_ESM クラッシュの原因）、
- * 防御として script/style/イベントハンドラ/javascript: のみを除去する。
+ * marked が生成した HTML を allowlist 方式でサニタイズする。
+ * sanitize-html は純 JS（htmlparser2 ベース・jsdom 非依存）なので、
+ * Vercel ランタイムで ERR_REQUIRE_ESM クラッシュを起こす isomorphic-dompurify の
+ * 代替として使える。記事本文に必要なタグ/属性のみ許可する。
  */
-function scrubHtml(html: string): string {
-  return html
-    .replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, '')
-    .replace(/<\s*style[^>]*>[\s\S]*?<\s*\/\s*style\s*>/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src)\s*=\s*("javascript:[^"]*"|'javascript:[^']*')/gi, '$1="#"')
+function sanitizeArticleHtml(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'a', 'ul', 'ol', 'li', 'blockquote',
+      'strong', 'em', 'b', 'i', 'del', 's', 'mark', 'sup', 'sub',
+      'code', 'pre', 'hr', 'br', 'span',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'img',
+    ],
+    allowedAttributes: {
+      a: ['href', 'name', 'target', 'rel', 'title'],
+      img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
+      h2: ['id'],
+      h3: ['id'],
+      th: ['align'],
+      td: ['align'],
+      span: ['class'],
+      code: ['class'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    allowedSchemesAppliedToAttributes: ['href', 'src'],
+    // 外部リンクは安全属性を強制
+    transformTags: {
+      a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer' }, true),
+    },
+  })
 }
 
 /** marked にID付きH2レンダラーを設定し、本文を安全にHTML化 */
@@ -105,7 +127,7 @@ function renderMarkdownSafe(content: string): string {
 
   marked.use({ renderer })
   const raw = marked.parse(content) as string
-  return scrubHtml(raw)
+  return sanitizeArticleHtml(raw)
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsunavi.vercel.app'
