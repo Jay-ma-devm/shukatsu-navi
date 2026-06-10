@@ -1,28 +1,28 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Article } from '@/lib/supabase'
 
-// カテゴリごとの色定義
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  'ES・自己PR':           { bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' },
-  '面接対策':             { bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' },
-  'インターン':           { bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' },
-  '業界研究':             { bg: '#EDE9FE', text: '#5B21B6', border: '#DDD6FE' },
-  'OB・OG訪問':          { bg: '#FCE7F3', text: '#9D174D', border: '#FBCFE8' },
-  'グループディスカッション': { bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA' },
-  'マインドセット':       { bg: '#F0FDF4', text: '#14532D', border: '#BBF7D0' },
+// カテゴリごとの色定義（バッジ用 + サムネイルグラデ用）
+const CATEGORY_THEME: Record<string, { badge: string; text: string; from: string; to: string; icon: string }> = {
+  'ES・自己PR':           { badge: '#FEF3C7', text: '#92400E', from: '#FCD34D', to: '#F59E0B', icon: '✍️' },
+  '面接対策':             { badge: '#DBEAFE', text: '#1E40AF', from: '#60A5FA', to: '#2563EB', icon: '🎤' },
+  'インターン':           { badge: '#D1FAE5', text: '#065F46', from: '#34D399', to: '#059669', icon: '💼' },
+  '業界研究':             { badge: '#EDE9FE', text: '#5B21B6', from: '#A78BFA', to: '#7C3AED', icon: '🔍' },
+  '企業研究':             { badge: '#FFEDD5', text: '#9A3412', from: '#FB923C', to: '#EA580C', icon: '🏢' },
+  'OB・OG訪問':          { badge: '#CCFBF1', text: '#115E59', from: '#5EEAD4', to: '#0D9488', icon: '🤝' },
+  'SPI・筆記試験':        { badge: '#CFFAFE', text: '#155E75', from: '#67E8F9', to: '#0891B2', icon: '📝' },
+  '就活マナー':           { badge: '#EDE9FE', text: '#4C1D95', from: '#A78BFA', to: '#6D28D9', icon: '👔' },
+  '就活サイト比較':       { badge: '#FCE7F3', text: '#9D174D', from: '#F472B6', to: '#DB2777', icon: '⚖️' },
+  '就活スケジュール':     { badge: '#E0E7FF', text: '#3730A3', from: '#818CF8', to: '#4338CA', icon: '📅' },
+  'キャリア設計':         { badge: '#FCE7F3', text: '#9D174D', from: '#F472B6', to: '#BE185D', icon: '🌟' },
+  '留学・海外就活':       { badge: '#D1FAE5', text: '#064E3B', from: '#34D399', to: '#047857', icon: '✈️' },
 }
 
-const DEFAULT_COLOR = { bg: 'var(--accent-light)', text: 'var(--accent)', border: 'rgba(200,75,49,0.2)' }
-
-function getCategoryColor(category: string) {
-  return CATEGORY_COLORS[category] ?? DEFAULT_COLOR
-}
+const DEFAULT_THEME = { badge: '#FEE2E2', text: '#991B1B', from: '#F87171', to: '#DC2626', icon: '📄' }
+const getTheme = (c: string) => CATEGORY_THEME[c] ?? DEFAULT_THEME
 
 export function ArticleCard({ article, featured = false }: { article: Article; featured?: boolean }) {
   const readingTime = Math.max(1, Math.ceil(article.content.length / 400))
-  const color = getCategoryColor(article.category)
-  const thumbUrl = `https://picsum.photos/seed/shukatsu-${article.slug}/400/200`
+  const theme = getTheme(article.category)
 
   return (
     <article
@@ -32,29 +32,41 @@ export function ArticleCard({ article, featured = false }: { article: Article; f
         border: '1px solid var(--border)',
       }}
     >
-      {/* サムネイル */}
-      <Link href={`/articles/${article.slug}`} className="block relative overflow-hidden" style={{ aspectRatio: '2/1' }}>
-        <Image
-          src={thumbUrl}
-          alt={article.title}
-          fill
-          sizes="(max-width: 640px) 100vw, 400px"
-          className="object-cover transition-transform duration-300 hover:scale-105"
-          unoptimized
-        />
-        {/* カテゴリオーバーレイ */}
-        <div className="absolute top-3 left-3">
-          <span
-            className="text-xs font-bold px-2.5 py-1 rounded-full tracking-wide"
-            style={{
-              backgroundColor: color.bg,
-              color: color.text,
-              border: `1px solid ${color.border}`,
-            }}
-          >
-            {article.category}
-          </span>
-        </div>
+      {/* サムネイル: カテゴリ別グラデーション + アイコン */}
+      <Link
+        href={`/articles/${article.slug}`}
+        className="block relative overflow-hidden flex items-center justify-center transition-transform duration-300 hover:scale-105"
+        style={{
+          aspectRatio: '2/1',
+          background: `linear-gradient(135deg, ${theme.from} 0%, ${theme.to} 100%)`,
+        }}
+      >
+        {/* 大きなアイコン背景 */}
+        <span
+          className="absolute text-9xl opacity-25 select-none"
+          style={{ filter: 'blur(0.5px)' }}
+          aria-hidden="true"
+        >
+          {theme.icon}
+        </span>
+        {/* カテゴリ名（白文字） */}
+        <span
+          className="relative z-10 text-base md:text-lg font-black tracking-wide text-white drop-shadow-lg"
+          style={{ fontFamily: 'var(--font-serif)', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
+        >
+          {article.category}
+        </span>
+        {/* 小さなカテゴリバッジ */}
+        <span
+          className="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full tracking-wide"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            color: theme.text,
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          {theme.icon} {article.category}
+        </span>
       </Link>
 
       {/* コンテンツ */}
@@ -69,11 +81,7 @@ export function ArticleCard({ article, featured = false }: { article: Article; f
           </span>
           <span>·</span>
           <time dateTime={article.created_at}>
-            {new Date(article.created_at).toLocaleDateString('ja-JP', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {new Date(article.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })}
           </time>
         </div>
 
@@ -88,10 +96,7 @@ export function ArticleCard({ article, featured = false }: { article: Article; f
         </Link>
 
         {/* 概要 */}
-        <p
-          className="text-sm leading-relaxed mb-4 flex-1"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <p className="text-sm leading-relaxed mb-4 flex-1" style={{ color: 'var(--text-muted)' }}>
           {article.meta_desc.length > 90 ? article.meta_desc.slice(0, 88) + '…' : article.meta_desc}
         </p>
 
@@ -111,7 +116,6 @@ export function ArticleCard({ article, featured = false }: { article: Article; f
           </div>
         )}
 
-        {/* 続きを読むリンク */}
         <Link
           href={`/articles/${article.slug}`}
           className="inline-flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase hover:gap-3 transition-all duration-200 mt-auto"

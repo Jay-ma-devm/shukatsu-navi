@@ -1,10 +1,13 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 import { getArticleBySlug, getAllSlugs, getRelatedArticles, getPopularInCategory, getTotalCount } from '@/lib/supabase'
 import { AffiliateBlock } from '@/components/AffiliateBlock'
+import { LikeButton } from '@/components/LikeButton'
+import { Comments } from '@/components/Comments'
+import { CopyUrlButton } from '@/components/CopyUrlButton'
+import { AdSense } from '@/components/AdSense'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { PopularInCategory } from '@/components/PopularInCategory'
@@ -143,7 +146,7 @@ export default async function ArticlePage({
     },
     datePublished: article.created_at,
     dateModified: article.created_at,
-    image: `https://picsum.photos/seed/shukatsu-${slug}/1200/630`,
+    image: `${BASE_URL}/og-default.png`,
     url: `${BASE_URL}/articles/${slug}`,
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -186,18 +189,54 @@ export default async function ArticlePage({
 
       {/* ===== Article Hero ===== */}
       <div style={{ backgroundColor: 'var(--dark-mid)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* 記事slugをseedにしたPicsum画像 */}
-        <div style={{ position: 'relative', width: '100%', height: 240 }}>
-          <Image
-            src={`https://picsum.photos/seed/shukatsu-${slug}/800/400`}
-            alt={article.title}
-            fill
-            sizes="100vw"
-            priority
-            style={{ objectFit: 'cover' }}
-            unoptimized
-          />
-        </div>
+        {/* カテゴリ別グラデーション + アイコンヒーロー */}
+        {(() => {
+          const themes: Record<string, { from: string; to: string; icon: string }> = {
+            'ES・自己PR':      { from: '#FCD34D', to: '#F59E0B', icon: '✍️' },
+            '面接対策':        { from: '#60A5FA', to: '#2563EB', icon: '🎤' },
+            'インターン':      { from: '#34D399', to: '#059669', icon: '💼' },
+            '業界研究':        { from: '#A78BFA', to: '#7C3AED', icon: '🔍' },
+            '企業研究':        { from: '#FB923C', to: '#EA580C', icon: '🏢' },
+            'OB・OG訪問':     { from: '#5EEAD4', to: '#0D9488', icon: '🤝' },
+            'SPI・筆記試験':   { from: '#67E8F9', to: '#0891B2', icon: '📝' },
+            '就活マナー':      { from: '#A78BFA', to: '#6D28D9', icon: '👔' },
+            '就活サイト比較':  { from: '#F472B6', to: '#DB2777', icon: '⚖️' },
+            '就活スケジュール':{ from: '#818CF8', to: '#4338CA', icon: '📅' },
+            'キャリア設計':    { from: '#F472B6', to: '#BE185D', icon: '🌟' },
+            '留学・海外就活':  { from: '#34D399', to: '#047857', icon: '✈️' },
+          }
+          const t = themes[article.category] ?? { from: '#F87171', to: '#DC2626', icon: '📄' }
+          return (
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: 240,
+                background: `linear-gradient(135deg, ${t.from} 0%, ${t.to} 100%)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <span style={{ position: 'absolute', fontSize: 200, opacity: 0.18 }} aria-hidden="true">{t.icon}</span>
+              <span
+                style={{
+                  position: 'relative',
+                  zIndex: 1,
+                  color: 'white',
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 900,
+                  fontSize: 28,
+                  textShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {article.category}
+              </span>
+            </div>
+          )
+        })()}
         <div className="max-w-3xl mx-auto px-6 py-10">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs mb-5" aria-label="パンくず" style={{ color: '#9CA3AF' }}>
@@ -289,17 +328,9 @@ export default async function ArticlePage({
 
           {/* ===== Article Main Column ===== */}
           <article className="flex-1 min-w-0">
-            {/* Ad placeholder */}
-            <div
-              className="rounded-lg flex items-center justify-center text-sm mb-10"
-              style={{
-                backgroundColor: 'var(--surface-alt)',
-                border: '1px dashed var(--border)',
-                height: 72,
-                color: 'var(--text-muted)',
-              }}
-            >
-              広告スペース（Google AdSense）
+            {/* Ad: 記事冒頭 */}
+            <div className="mb-10">
+              <AdSense slot="top-banner" format="auto" />
             </div>
 
             {/* ===== この記事でわかること ===== */}
@@ -379,8 +410,21 @@ export default async function ArticlePage({
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
 
+            {/* いいねボタン */}
+            <div className="flex items-center justify-center mt-10 mb-2">
+              <LikeButton slug={slug} />
+            </div>
+            <p className="text-center text-xs mb-8" style={{ color: 'var(--text-muted)' }}>
+              この記事が役に立ったらいいねを押してください
+            </p>
+
             {/* Affiliate CTA */}
             <AffiliateBlock />
+
+            {/* Ad: 記事末尾 */}
+            <div className="mt-10">
+              <AdSense slot="bottom-banner" format="auto" />
+            </div>
 
             {/* ===== この記事のまとめ ===== */}
             <div
@@ -439,16 +483,7 @@ export default async function ArticlePage({
                   </svg>
                   LINE でシェア
                 </a>
-                <div
-                  className="flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-lg"
-                  style={{ backgroundColor: 'var(--surface-alt)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                  </svg>
-                  URLをコピー
-                </div>
+                <CopyUrlButton url={`${BASE_URL}/articles/${slug}`} />
               </div>
             </div>
 
@@ -545,6 +580,9 @@ export default async function ArticlePage({
                 </div>
               </section>
             )}
+
+            {/* ===== コメントセクション ===== */}
+            <Comments slug={slug} />
           </article>
 
           {/* ===== Sidebar ===== */}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Serif_JP, Noto_Sans_JP } from 'next/font/google'
+import { AdSenseScript } from '@/components/AdSenseScript'
 import "./globals.css";
 
 const notoSerifJP = Noto_Serif_JP({
@@ -42,7 +43,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`h-full antialiased ${notoSerifJP.variable} ${notoSansJP.variable}`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <AdSenseScript />
+      </body>
     </html>
   );
 }
