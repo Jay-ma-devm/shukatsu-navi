@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getArticles, getCategories, getTotalCount, getTopArticlesByCategories } from '@/lib/supabase'
 import { ArticleSearch } from '@/components/ArticleSearch'
 import { SiteHeader } from '@/components/SiteHeader'
@@ -6,6 +7,12 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { Pagination } from '@/components/Pagination'
 
 export const revalidate = 1800
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsunavi.vercel.app'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 const PER_PAGE = 20
 
@@ -50,8 +57,30 @@ export default async function Home({
     : '/'
   const categoryCountMap = new Map(categories.map(([c, n]) => [c, n]))
 
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: '就活ナビ',
+    url: SITE_URL,
+    description: '28卒向けES・面接・インターン・業界研究の完全攻略ガイド。',
+    inLanguage: 'ja',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  }
+
   return (
     <div style={{ backgroundColor: 'var(--bg)', minHeight: '100vh' }}>
+      {/* ホームの WebSite + SearchAction 構造化データ（XSS対策: < を unicode エスケープ） */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c') }}
+      />
       <SiteHeader />
 
       {/* ===== Hero ===== */}

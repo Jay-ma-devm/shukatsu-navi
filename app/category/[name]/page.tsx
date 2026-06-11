@@ -29,9 +29,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { name } = await params
   const category = decodeURIComponent(name)
+  const totalCount = await getTotalCount(category)
+  const description = `${category}の就活攻略記事${totalCount}件をまとめています。28卒向けに${category}の対策・やり方・コツを実例つきで解説。内定獲得に役立つ情報を厳選しています。`
   return {
     title: `${category}の記事一覧`,
-    description: `${category}に関する就活攻略記事の一覧です。`,
+    description,
+    alternates: { canonical: `/category/${encodeURIComponent(category)}` },
+    openGraph: {
+      title: `${category}の記事一覧｜就活ナビ`,
+      description,
+      type: 'website',
+      url: `/category/${encodeURIComponent(category)}`,
+    },
   }
 }
 
