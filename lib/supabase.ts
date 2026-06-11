@@ -30,6 +30,17 @@ export async function getArticleBySlug(slug: string) {
   return data as Article | null
 }
 
+/** 新着順（created_at 降順）の記事を返す。RSS フィード用。 */
+export async function getRecentArticles(limit = 30) {
+  const { data } = await supabase
+    .from('articles')
+    .select('slug, title, category, meta_desc, created_at')
+    .eq('published', true)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  return (data as Pick<Article, 'slug' | 'title' | 'category' | 'meta_desc' | 'created_at'>[]) ?? []
+}
+
 export async function getAllSlugs() {
   const { data } = await supabase.from('articles').select('slug').eq('published', true).order('slug', { ascending: true })
   return data?.map(d => d.slug) ?? []

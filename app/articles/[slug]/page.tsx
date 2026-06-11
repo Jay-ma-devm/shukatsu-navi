@@ -31,10 +31,14 @@ export async function generateMetadata({
   return {
     title: article.title,
     description: article.meta_desc,
+    alternates: { canonical: `/articles/${slug}` },
     openGraph: {
       title: article.title,
       description: article.meta_desc,
       type: 'article',
+      url: `/articles/${slug}`,
+      publishedTime: article.created_at,
+      modifiedTime: article.created_at,
       images: [`https://picsum.photos/seed/shukatsu-${slug}/1200/630`],
     },
   }
@@ -111,7 +115,10 @@ function renderMarkdownSafe(content: string): string {
   const h2Count: Record<string, number> = {}
 
   renderer.heading = ({ text, depth }) => {
-    if (depth === 2) {
+    // ページ側に既に <h1>（記事タイトル）があるため、本文中の h1 は h2 に降格して
+    // 1ページ1つの h1 を保証する（AEO: 単一H1チェック・見出し階層の整合）。
+    const effectiveDepth = depth === 1 ? 2 : depth
+    if (effectiveDepth === 2) {
       const id = text
         .toLowerCase()
         .replace(/[^\w　-鿿＀-￯]/g, '-')
@@ -122,7 +129,7 @@ function renderMarkdownSafe(content: string): string {
       h2Count[id] = count + 1
       return `<h2 id="${finalId}">${text}</h2>`
     }
-    return `<h${depth}>${text}</h${depth}>`
+    return `<h${effectiveDepth}>${text}</h${effectiveDepth}>`
   }
 
   marked.use({ renderer })

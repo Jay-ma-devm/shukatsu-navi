@@ -34,6 +34,12 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: ['https://shukatsunavi.vercel.app/og-default.png'],
   },
+  // RSS フィードを <link rel="alternate"> として全ページに出力（AI/RSS リーダーの発見経路）
+  alternates: {
+    types: {
+      'application/rss+xml': '/feed.xml',
+    },
+  },
   // Google Search Console のサイト所有権確認（env に確認コードを設定すると <meta> が出力される）
   verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION
     ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION }
@@ -45,9 +51,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shukatsunavi.vercel.app'
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: '就活ナビ',
+    url: siteUrl,
+    logo: `${siteUrl}/og-default.png`,
+    description: '28卒向けのES・面接・インターン・業界研究の就活攻略ガイド。',
+  }
+
   return (
     <html lang="ja" className={`h-full antialiased ${notoSerifJP.variable} ${notoSansJP.variable}`}>
       <body className="min-h-full flex flex-col">
+        {/* サイト全体の Organization 構造化データ（XSS対策: < を unicode エスケープ） */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd).replace(/</g, '\\u003c') }}
+        />
         {children}
         <AdSenseScript />
       </body>
